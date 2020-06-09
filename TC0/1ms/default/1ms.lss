@@ -1,0 +1,161 @@
+
+1ms.elf:     file format elf32-avr
+
+Sections:
+Idx Name          Size      VMA       LMA       File off  Algn
+  0 .text         000000c6  00000000  00000000  00000054  2**1
+                  CONTENTS, ALLOC, LOAD, READONLY, CODE
+  1 .debug_aranges 00000020  00000000  00000000  0000011a  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  2 .debug_pubnames 0000002a  00000000  00000000  0000013a  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  3 .debug_info   00000089  00000000  00000000  00000164  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  4 .debug_abbrev 00000054  00000000  00000000  000001ed  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  5 .debug_line   000000a2  00000000  00000000  00000241  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  6 .debug_frame  00000030  00000000  00000000  000002e4  2**2
+                  CONTENTS, READONLY, DEBUGGING
+  7 .debug_str    00000083  00000000  00000000  00000314  2**0
+                  CONTENTS, READONLY, DEBUGGING
+
+Disassembly of section .text:
+
+00000000 <__vectors>:
+   0:	12 c0       	rjmp	.+36     	; 0x26 <__ctors_end>
+   2:	19 c0       	rjmp	.+50     	; 0x36 <__bad_interrupt>
+   4:	18 c0       	rjmp	.+48     	; 0x36 <__bad_interrupt>
+   6:	17 c0       	rjmp	.+46     	; 0x36 <__bad_interrupt>
+   8:	16 c0       	rjmp	.+44     	; 0x36 <__bad_interrupt>
+   a:	15 c0       	rjmp	.+42     	; 0x36 <__bad_interrupt>
+   c:	14 c0       	rjmp	.+40     	; 0x36 <__bad_interrupt>
+   e:	13 c0       	rjmp	.+38     	; 0x36 <__bad_interrupt>
+  10:	12 c0       	rjmp	.+36     	; 0x36 <__bad_interrupt>
+  12:	2f c0       	rjmp	.+94     	; 0x72 <__vector_9>
+  14:	10 c0       	rjmp	.+32     	; 0x36 <__bad_interrupt>
+  16:	0f c0       	rjmp	.+30     	; 0x36 <__bad_interrupt>
+  18:	0e c0       	rjmp	.+28     	; 0x36 <__bad_interrupt>
+  1a:	0d c0       	rjmp	.+26     	; 0x36 <__bad_interrupt>
+  1c:	0c c0       	rjmp	.+24     	; 0x36 <__bad_interrupt>
+  1e:	0b c0       	rjmp	.+22     	; 0x36 <__bad_interrupt>
+  20:	0a c0       	rjmp	.+20     	; 0x36 <__bad_interrupt>
+  22:	09 c0       	rjmp	.+18     	; 0x36 <__bad_interrupt>
+  24:	08 c0       	rjmp	.+16     	; 0x36 <__bad_interrupt>
+
+00000026 <__ctors_end>:
+  26:	11 24       	eor	r1, r1
+  28:	1f be       	out	0x3f, r1	; 63
+  2a:	cf e5       	ldi	r28, 0x5F	; 95
+  2c:	d4 e0       	ldi	r29, 0x04	; 4
+  2e:	de bf       	out	0x3e, r29	; 62
+  30:	cd bf       	out	0x3d, r28	; 61
+  32:	02 d0       	rcall	.+4      	; 0x38 <main>
+  34:	46 c0       	rjmp	.+140    	; 0xc2 <_exit>
+
+00000036 <__bad_interrupt>:
+  36:	e4 cf       	rjmp	.-56     	; 0x0 <__vectors>
+
+00000038 <main>:
+#include<avr/io.h>
+#include<avr/interrupt.h>
+
+//Dinh thoi 1ms voi Timer/Counter 0
+
+int main(){
+  38:	df 93       	push	r29
+  3a:	cf 93       	push	r28
+  3c:	0f 92       	push	r0
+  3e:	cd b7       	in	r28, 0x3d	; 61
+  40:	de b7       	in	r29, 0x3e	; 62
+	DDRB |= 0xFF;
+  42:	e7 e3       	ldi	r30, 0x37	; 55
+  44:	f0 e0       	ldi	r31, 0x00	; 0
+  46:	80 81       	ld	r24, Z
+  48:	e7 e3       	ldi	r30, 0x37	; 55
+  4a:	f0 e0       	ldi	r31, 0x00	; 0
+  4c:	8f ef       	ldi	r24, 0xFF	; 255
+  4e:	80 83       	st	Z, r24
+	PORTB = 0x00;
+  50:	e8 e3       	ldi	r30, 0x38	; 56
+  52:	f0 e0       	ldi	r31, 0x00	; 0
+  54:	10 82       	st	Z, r1
+	
+	//Chon tan so clk/8 (prescaler = 8) -> T = 8us -> max t = 8us * 256 = 2048us > 1ms
+	TCCR0 = (1 << CS01);
+  56:	e3 e5       	ldi	r30, 0x53	; 83
+  58:	f0 e0       	ldi	r31, 0x00	; 0
+  5a:	82 e0       	ldi	r24, 0x02	; 2
+  5c:	80 83       	st	Z, r24
+	//Dinh thoi 1ms = 1000us -> bo dem can dem 125 lan de het 1ms -> gia tri khoi dau la: 256 - 125 = 131
+	TCNT0 = 131;
+  5e:	e2 e5       	ldi	r30, 0x52	; 82
+  60:	f0 e0       	ldi	r31, 0x00	; 0
+  62:	83 e8       	ldi	r24, 0x83	; 131
+  64:	80 83       	st	Z, r24
+	//Cho phep ngat khi co co tran o T/C0
+	TIMSK = (1 << TOIE0);  
+  66:	e9 e5       	ldi	r30, 0x59	; 89
+  68:	f0 e0       	ldi	r31, 0x00	; 0
+  6a:	81 e0       	ldi	r24, 0x01	; 1
+  6c:	80 83       	st	Z, r24
+	sei(); //set bit I cho phep ngat toan cuc
+  6e:	78 94       	sei
+  70:	ff cf       	rjmp	.-2      	; 0x70 <__SREG__+0x31>
+
+00000072 <__vector_9>:
+
+	return 0;
+}
+
+//Trinh phuc vu ngat tran T/C0
+ISR (TIMER0_OVF_vect){
+  72:	1f 92       	push	r1
+  74:	0f 92       	push	r0
+  76:	0f b6       	in	r0, 0x3f	; 63
+  78:	0f 92       	push	r0
+  7a:	11 24       	eor	r1, r1
+  7c:	8f 93       	push	r24
+  7e:	9f 93       	push	r25
+  80:	af 93       	push	r26
+  82:	bf 93       	push	r27
+  84:	ef 93       	push	r30
+  86:	ff 93       	push	r31
+  88:	df 93       	push	r29
+  8a:	cf 93       	push	r28
+  8c:	cd b7       	in	r28, 0x3d	; 61
+  8e:	de b7       	in	r29, 0x3e	; 62
+	TCNT0 = 131;
+  90:	e2 e5       	ldi	r30, 0x52	; 82
+  92:	f0 e0       	ldi	r31, 0x00	; 0
+  94:	83 e8       	ldi	r24, 0x83	; 131
+  96:	80 83       	st	Z, r24
+	PORTB ^= 1;
+  98:	a8 e3       	ldi	r26, 0x38	; 56
+  9a:	b0 e0       	ldi	r27, 0x00	; 0
+  9c:	e8 e3       	ldi	r30, 0x38	; 56
+  9e:	f0 e0       	ldi	r31, 0x00	; 0
+  a0:	90 81       	ld	r25, Z
+  a2:	81 e0       	ldi	r24, 0x01	; 1
+  a4:	89 27       	eor	r24, r25
+  a6:	8c 93       	st	X, r24
+}
+  a8:	cf 91       	pop	r28
+  aa:	df 91       	pop	r29
+  ac:	ff 91       	pop	r31
+  ae:	ef 91       	pop	r30
+  b0:	bf 91       	pop	r27
+  b2:	af 91       	pop	r26
+  b4:	9f 91       	pop	r25
+  b6:	8f 91       	pop	r24
+  b8:	0f 90       	pop	r0
+  ba:	0f be       	out	0x3f, r0	; 63
+  bc:	0f 90       	pop	r0
+  be:	1f 90       	pop	r1
+  c0:	18 95       	reti
+
+000000c2 <_exit>:
+  c2:	f8 94       	cli
+
+000000c4 <__stop_program>:
+  c4:	ff cf       	rjmp	.-2      	; 0xc4 <__stop_program>
