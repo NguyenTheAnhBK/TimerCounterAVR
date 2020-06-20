@@ -1,0 +1,166 @@
+
+10ms.elf:     file format elf32-avr
+
+Sections:
+Idx Name          Size      VMA       LMA       File off  Algn
+  0 .text         000000ce  00000000  00000000  00000054  2**1
+                  CONTENTS, ALLOC, LOAD, READONLY, CODE
+  1 .debug_aranges 00000020  00000000  00000000  00000122  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  2 .debug_pubnames 0000002a  00000000  00000000  00000142  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  3 .debug_info   00000089  00000000  00000000  0000016c  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  4 .debug_abbrev 00000054  00000000  00000000  000001f5  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  5 .debug_line   000000a3  00000000  00000000  00000249  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  6 .debug_frame  00000030  00000000  00000000  000002ec  2**2
+                  CONTENTS, READONLY, DEBUGGING
+  7 .debug_str    00000085  00000000  00000000  0000031c  2**0
+                  CONTENTS, READONLY, DEBUGGING
+
+Disassembly of section .text:
+
+00000000 <__vectors>:
+   0:	12 c0       	rjmp	.+36     	; 0x26 <__ctors_end>
+   2:	19 c0       	rjmp	.+50     	; 0x36 <__bad_interrupt>
+   4:	18 c0       	rjmp	.+48     	; 0x36 <__bad_interrupt>
+   6:	17 c0       	rjmp	.+46     	; 0x36 <__bad_interrupt>
+   8:	16 c0       	rjmp	.+44     	; 0x36 <__bad_interrupt>
+   a:	15 c0       	rjmp	.+42     	; 0x36 <__bad_interrupt>
+   c:	14 c0       	rjmp	.+40     	; 0x36 <__bad_interrupt>
+   e:	13 c0       	rjmp	.+38     	; 0x36 <__bad_interrupt>
+  10:	32 c0       	rjmp	.+100    	; 0x76 <__vector_8>
+  12:	11 c0       	rjmp	.+34     	; 0x36 <__bad_interrupt>
+  14:	10 c0       	rjmp	.+32     	; 0x36 <__bad_interrupt>
+  16:	0f c0       	rjmp	.+30     	; 0x36 <__bad_interrupt>
+  18:	0e c0       	rjmp	.+28     	; 0x36 <__bad_interrupt>
+  1a:	0d c0       	rjmp	.+26     	; 0x36 <__bad_interrupt>
+  1c:	0c c0       	rjmp	.+24     	; 0x36 <__bad_interrupt>
+  1e:	0b c0       	rjmp	.+22     	; 0x36 <__bad_interrupt>
+  20:	0a c0       	rjmp	.+20     	; 0x36 <__bad_interrupt>
+  22:	09 c0       	rjmp	.+18     	; 0x36 <__bad_interrupt>
+  24:	08 c0       	rjmp	.+16     	; 0x36 <__bad_interrupt>
+
+00000026 <__ctors_end>:
+  26:	11 24       	eor	r1, r1
+  28:	1f be       	out	0x3f, r1	; 63
+  2a:	cf e5       	ldi	r28, 0x5F	; 95
+  2c:	d4 e0       	ldi	r29, 0x04	; 4
+  2e:	de bf       	out	0x3e, r29	; 62
+  30:	cd bf       	out	0x3d, r28	; 61
+  32:	02 d0       	rcall	.+4      	; 0x38 <main>
+  34:	4a c0       	rjmp	.+148    	; 0xca <_exit>
+
+00000036 <__bad_interrupt>:
+  36:	e4 cf       	rjmp	.-56     	; 0x0 <__vectors>
+
+00000038 <main>:
+
+// Dinh thoi 10ms voi T/C1
+// Tan so hoat dong cua MCU la 1MHz
+// T/C1 co do phan giai 16 bits va co kha nang tao xung dieu rong PWM (Pulse Width Modulation)
+
+int main(){
+  38:	df 93       	push	r29
+  3a:	cf 93       	push	r28
+  3c:	0f 92       	push	r0
+  3e:	cd b7       	in	r28, 0x3d	; 61
+  40:	de b7       	in	r29, 0x3e	; 62
+	DDRB |= 0xFF;
+  42:	e7 e3       	ldi	r30, 0x37	; 55
+  44:	f0 e0       	ldi	r31, 0x00	; 0
+  46:	80 81       	ld	r24, Z
+  48:	e7 e3       	ldi	r30, 0x37	; 55
+  4a:	f0 e0       	ldi	r31, 0x00	; 0
+  4c:	8f ef       	ldi	r24, 0xFF	; 255
+  4e:	80 83       	st	Z, r24
+	PORTB = 0x00;
+  50:	e8 e3       	ldi	r30, 0x38	; 56
+  52:	f0 e0       	ldi	r31, 0x00	; 0
+  54:	10 82       	st	Z, r1
+
+	// Prescaler = 1 -> T = 1us -> max t = 1us * 65536 = 65.536ms > 10ms
+	TCCR1B = (1 << CS10); //  su dung Timer Counter Control Register 1B 
+  56:	ee e4       	ldi	r30, 0x4E	; 78
+  58:	f0 e0       	ldi	r31, 0x00	; 0
+  5a:	81 e0       	ldi	r24, 0x01	; 1
+  5c:	80 83       	st	Z, r24
+	
+	// De tao 10ms -> dem 10000 lan -> gia tri khoi dau la: 65535 - 10000 = 55535
+	TCNT1 = 55535;
+  5e:	ec e4       	ldi	r30, 0x4C	; 76
+  60:	f0 e0       	ldi	r31, 0x00	; 0
+  62:	8f ee       	ldi	r24, 0xEF	; 239
+  64:	98 ed       	ldi	r25, 0xD8	; 216
+  66:	91 83       	std	Z+1, r25	; 0x01
+  68:	80 83       	st	Z, r24
+	// Timer/Counter Interrupt Mask Register cho phep ngat co tran o T/C1
+	TIMSK = (1 << TOIE1);
+  6a:	e9 e5       	ldi	r30, 0x59	; 89
+  6c:	f0 e0       	ldi	r31, 0x00	; 0
+  6e:	84 e0       	ldi	r24, 0x04	; 4
+  70:	80 83       	st	Z, r24
+	sei(); // set bit I cho phep ngat toan cuc
+  72:	78 94       	sei
+  74:	ff cf       	rjmp	.-2      	; 0x74 <__SREG__+0x35>
+
+00000076 <__vector_8>:
+
+	return 0;
+}
+
+// Trinh phuc vu ngat tran T/C1
+ISR(TIMER1_OVF_vect){
+  76:	1f 92       	push	r1
+  78:	0f 92       	push	r0
+  7a:	0f b6       	in	r0, 0x3f	; 63
+  7c:	0f 92       	push	r0
+  7e:	11 24       	eor	r1, r1
+  80:	8f 93       	push	r24
+  82:	9f 93       	push	r25
+  84:	af 93       	push	r26
+  86:	bf 93       	push	r27
+  88:	ef 93       	push	r30
+  8a:	ff 93       	push	r31
+  8c:	df 93       	push	r29
+  8e:	cf 93       	push	r28
+  90:	cd b7       	in	r28, 0x3d	; 61
+  92:	de b7       	in	r29, 0x3e	; 62
+	TCNT1 = 55535;
+  94:	ec e4       	ldi	r30, 0x4C	; 76
+  96:	f0 e0       	ldi	r31, 0x00	; 0
+  98:	8f ee       	ldi	r24, 0xEF	; 239
+  9a:	98 ed       	ldi	r25, 0xD8	; 216
+  9c:	91 83       	std	Z+1, r25	; 0x01
+  9e:	80 83       	st	Z, r24
+	PORTB ^= 1;
+  a0:	a8 e3       	ldi	r26, 0x38	; 56
+  a2:	b0 e0       	ldi	r27, 0x00	; 0
+  a4:	e8 e3       	ldi	r30, 0x38	; 56
+  a6:	f0 e0       	ldi	r31, 0x00	; 0
+  a8:	90 81       	ld	r25, Z
+  aa:	81 e0       	ldi	r24, 0x01	; 1
+  ac:	89 27       	eor	r24, r25
+  ae:	8c 93       	st	X, r24
+}
+  b0:	cf 91       	pop	r28
+  b2:	df 91       	pop	r29
+  b4:	ff 91       	pop	r31
+  b6:	ef 91       	pop	r30
+  b8:	bf 91       	pop	r27
+  ba:	af 91       	pop	r26
+  bc:	9f 91       	pop	r25
+  be:	8f 91       	pop	r24
+  c0:	0f 90       	pop	r0
+  c2:	0f be       	out	0x3f, r0	; 63
+  c4:	0f 90       	pop	r0
+  c6:	1f 90       	pop	r1
+  c8:	18 95       	reti
+
+000000ca <_exit>:
+  ca:	f8 94       	cli
+
+000000cc <__stop_program>:
+  cc:	ff cf       	rjmp	.-2      	; 0xcc <__stop_program>

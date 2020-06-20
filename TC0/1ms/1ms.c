@@ -2,6 +2,7 @@
 #include<avr/interrupt.h>
 
 //Dinh thoi 1ms voi Timer/Counter 0
+//Tan so hoat dong cua MCU la: 1MHz
 
 int main(){
 	DDRB |= 0xFF;
